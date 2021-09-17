@@ -49,6 +49,22 @@ def create_table():
     close_connection(conn, cur)
 
 
-    class FastFood():
+def populate_table():
+    conn = psycopg2.connect(**configs)
 
-        ...
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+            COPY fast_food FROM './data/fast_food_restaurant_us.csv' DELIMITER ',' CSV HEADER;
+        """
+    )
+
+    close_connection(conn, cur)
+
+
+class FastFood():
+
+    ...
+
+
