@@ -1,8 +1,11 @@
+from flask.json import jsonify
 import psycopg2
 from .configs import configs
 from csv import DictReader
 from app.exceptions.fast_food_exceptions import FastFoodNotFoundError
 from psycopg2 import sql
+from typing import Union
+
 
 def close_connection(conn, cur):
     conn.commit()
@@ -10,96 +13,12 @@ def close_connection(conn, cur):
     conn.close()
 
 
-def create_database():
-    conn = psycopg2.connect(**configs)
-
-    cur = conn.cursor()
-
-    cur.execute(
-        """
-            CREATE DATABASE fast_food;
-        """
-    )
-
-    close_connection(conn, cur)
-
-
-
-def create_table():
-    conn = psycopg2.connect(**configs)
-
-    cur = conn.cursor()
-
-    cur.execute(
-        """
-            CREATE TABLE IF NOT EXISTS fast_food (
-                id BIGSERIAL PRIMARY KEY,
-                address VARCHAR(255),
-                categories VARCHAR(255),
-                city VARCHAR(255),
-                country VARCHAR(5),
-                latitude VARCHAR(15),
-                longitude VARCHAR(15),
-                name VARCHAR(255),
-                postal_code INT,
-                province VARCHAR(5),
-                websites TEXT
-            );
-        """
-    )
-
-    close_connection(conn, cur)
-
-
-def populate_table():
-    with open('fast_food_restaurants_us.csv', 'r') as file:
-        
-        data_file = DictReader(file)
-
-        for row in data_file:
-
-            conn = psycopg2.connect(**configs)
-
-            cur = conn.cursor()
-
-            query = """
-                INSERT INTO fast_food
-                    (id, address, categories, city, country, latitude, longitude, name, postal_code, province, websites)
-                VALUES
-                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,)
-            """
-            params = (
-                row['id'],
-                row['address'],
-                row['categories'],
-                row['city'],
-                row['country'],
-                row['latitude'],
-                row['longitude'],
-                row['name'],
-                row['postal_code'],
-                row['province'],
-                row['websites']
-            )
-
-            cur.execute(query, params)
-
-            close_connection(conn, cur)
-
-
 class FastFood():
 
-    def __init__(self, address, categories, city, country, latitude, longitude, name, postal_code, province, websites):
-        self.address = address,
-        self.categories = categories,
-        self.city = city,
-        self.country = country,
-        self.latitude = latitude,
-        self.longitude = longitude,
-        self.name = name,
-        self.postal_code = postal_code,
-        self.province = province,
-        self.websites = websites
+    def __init__(self, fields: Union[tuple, dict]) -> None:
+        if type(fields) is dict:
+            for k, v in fields.items():
+                setattr(self, k, v)
     
 
     @staticmethod
@@ -118,9 +37,7 @@ class FastFood():
 
         close_connection(conn, cur)
 
-        serialized_data = [FastFood(fast_food_data).__dixt__ for fast_food_data in fetch_result]
-
-        return serialized_data
+        return fetch_result
 
     
     @staticmethod
@@ -140,9 +57,7 @@ class FastFood():
 
         close_connection(conn, cur)
 
-        serialized_data = FastFood(fetch_result).__dict__
-
-        return serialized_data
+        return jsonify(fetch_result)
 
     
     @staticmethod
@@ -177,7 +92,7 @@ class FastFood():
         cur = conn.cursor()
 
         columns = [sql.Identifier(key) for key in data.keys()]
-        values = [sql.Identifier(value) for value in data.values()]
+        values = [sql.Literal(value) for value in data.values()]
 
         query = sql.SQL(
             """
@@ -190,7 +105,7 @@ class FastFood():
                 RETURNING *
             """
         ).format(
-            id = sql.Literals(str(id)),
+            id = sql.Literal(str(id)),
             columns = sql.SQL(',').join(columns),
             values = sql.SQL(',').join(values)
         )
@@ -214,21 +129,21 @@ class FastFood():
 
         cur = conn.cursor()
 
-        columns = [sql.Identifier(key) for key in self.__dict__.keys()]
-        values = [sql.Identifier(value) for value in self.__dict__.values()]
+        data = self.__dict__
+
+        columns = [sql.Identifier(key) for key in data.keys()]
+        values = [sql.Literal(value) for value in data.values()]
 
         query = sql.SQL(
             """
-                INSERT INTO
-                    fast_food (id, {columns})
+                INSERT INTO fast_food 
+                    (id, {columns})
                 VALUES
                     (DEFAULT, {values})
                 RETURNING *
             """
-        ).format(
-            columns = sql.SQL(',').join(columns),
-            values = sql.SQL(',').join(values)
-        )
+        ).format(columns=sql.SQL(',').join(columns), 
+                values=sql.SQL(',').join(values))
 
         cur.execute(query)
 
