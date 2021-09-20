@@ -1,6 +1,6 @@
 import psycopg2
 from .configs import configs
-
+from csv import DictReader
 
 def close_connection(conn, cur):
     conn.commit()
@@ -50,17 +50,39 @@ def create_table():
 
 
 def populate_table():
-    conn = psycopg2.connect(**configs)
+    with open('fast_food_restaurants_us.csv', 'r') as file:
+        
+        data_file = DictReader(file)
 
-    cur = conn.cursor()
+        for row in data_file:
 
-    cur.execute(
-        """
-            COPY fast_food FROM './data/fast_food_restaurant_us.csv' DELIMITER ',' CSV HEADER;
-        """
-    )
+            conn = psycopg2.connect(**configs)
 
-    close_connection(conn, cur)
+            cur = conn.cursor()
+
+            query = """
+                INSERT INTO fast_food
+                    (id, address, categories, city, country, latitude, longitude, name, postal_code, province, websites)
+                VALUES
+                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,)
+            """
+            params = (
+                row['id'],
+                row['address'],
+                row['categories'],
+                row['city'],
+                row['country'],
+                row['latitude'],
+                row['longitude'],
+                row['name'],
+                row['postal_code'],
+                row['province'],
+                row['websites']
+            )
+
+            cur.execute(query, params)
+
+            close_connection(conn, cur)
 
 
 class FastFood():

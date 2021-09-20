@@ -1,4 +1,4 @@
-﻿,address,categories,city,country,latitude,longitude,name,postalCode,province,websites
+﻿id,address,categories,city,country,latitude,longitude,name,postal_code,province,websites
 0,800 N Canal Blvd,American Restaurant and Fast Food Restaurant,Thibodaux,US,29.814697,-90.814742,SONIC Drive In,70301,LA,"https://locations.sonicdrivein.com/la/thibodaux/800-north-canal-boulevard.html,http://sonicdrivein.com,http://www.sonicdrivein.com"
 1,800 N Canal Blvd,Fast Food Restaurants,Thibodaux,US,29.814697,-90.814742,SONIC Drive In,70301,LA,"https://locations.sonicdrivein.com/la/thibodaux/800-north-canal-boulevard.html,http://sonicdrivein.com,http://www.sonicdrivein.com"
 2,206 Wears Valley Rd,Fast Food Restaurant,Pigeon Forge,US,35.803788,-83.580553,Taco Bell,37863,TN,"http://www.tacobell.com,https://locations.tacobell.com/tn/pigeon-forge/206-wears-valley-road.html?utm_source=yextandutm_campaign=yextpowerlistingsandutm_medium=referralandutm_term=026432andutm_content=website"
