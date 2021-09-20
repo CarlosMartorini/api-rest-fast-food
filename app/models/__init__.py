@@ -1,3 +1,4 @@
-from . import fast_food_model
+from . import populate_table_model
 
-fast_food_model.create_table()
+populate_table_model.create_table()
+populate_table_model.populate_table()
