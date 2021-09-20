@@ -16,11 +16,11 @@ def get_fast_food_by_id(id: int):
     return fast_food, 200
 
 
-def delete_fats_food(id: int):
+def delete_fast_food(id: int):
     try:
-        delete_fast_food = FastFood.delete(id)
+        fast_food_to_delete = FastFood.delete(id)
 
-        return delete_fats_food, 200
+        return fast_food_to_delete, 200
     
     except FastFoodNotFoundError as e:
         return {'message': str(e)}, 404
